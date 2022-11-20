@@ -19,10 +19,10 @@ Run these commands from the linked_list folder to get started (gcc must be insta
     `$ gcc -I . -o tests.out tests/tests.c linked_list.c`  
     `$ ./tests.out`  
     
-   - Tests including memory management: (first set this to 1: `#define MEM_MANAGEMENT_TEST 0` in **linked_list.h**)  
-   `$ gcc -I . -I mem_management_test/ -o tests.out tests/tests.c linked_list.c mem_management_test/mem_management_test.c`  
+   - Tests including memory management: (first set this to 1: `#define MEM_TEST 0` in **linked_list.h**)  
+   `$ gcc -I . -I mem_test/ -o tests.out tests/tests.c linked_list.c mem_test/mem_test.c`  
    `$ ./tests.out`  
-      *Don't forget to set MEM_MANAGEMENT_TEST back to 0 when done!*  
+      *Don't forget to set MEM_TEST back to 0 when done!*  
     
 ## Windows
    - Simple example:  
@@ -33,7 +33,7 @@ Run these commands from the linked_list folder to get started (gcc must be insta
     `gcc -o tests.exe -I . .\tests\tests.c .\linked_list.c`  
     `.\tests.exe`  
     
-   - Tests including memory management: (first set this to 1: `#define MEM_MANAGEMENT_TEST 0` in **linked_list.h**)  
-   `gcc -o tests.exe -I . -I .\mem_management_test\ .\tests\tests.c .\linked_list.c .\mem_management_test\mem_management_test.c`  
+   - Tests including memory management: (first set this to 1: `#define MEM_TEST 0` in **linked_list.h**)  
+   `gcc -o tests.exe -I . -I .\mem_test\ .\tests\tests.c .\linked_list.c .\mem_test\mem_test.c`  
    `.\tests.exe`  
-     *Don't forget to set MEM_MANAGEMENT_TEST back to 0 when done!*  
+     *Don't forget to set MEM_TEST back to 0 when done!*  
