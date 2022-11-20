@@ -1,4 +1,4 @@
-#include "mem_management_test.h"
+#include "mem_test.h"
 
 typedef enum
 {
@@ -13,7 +13,7 @@ unsigned int invalidFreeAttempts = 0;
 static void AddAlloc(void* ptr);
 static void RemoveAlloc(void* ptr);
 
-void* mmtMalloc(size_t size)
+void* mtMalloc(size_t size)
 {
     void* ret = malloc(size);
 
@@ -25,37 +25,37 @@ void* mmtMalloc(size_t size)
     return ret;
 }
 
-void mmtFree(void* ptr)
+void mtFree(void* ptr)
 {
     RemoveAlloc(ptr);
     free(ptr);
 }
 
-mmTestStatus_t mmtGetStatus(void)
+mTestStatus_t mtGetStatus(void)
 {
     if (numRemainingAllocs == 0 && invalidFreeAttempts == 0)
     {
-        return MMT_PASSED;
+        return MT_PASSED;
     }
 
     if (invalidFreeAttempts > 0)
     {
-        return MMT_INVALID_FREE_ATTEMPTS;
+        return MT_INVALID_FREE_ATTEMPTS;
     }
 
-    return MMT_ALLOCS_NOT_FREED;
+    return MT_ALLOCS_NOT_FREED;
 }
 
-char* mmTestStatusToString(mmTestStatus_t status)
+char* mTestStatusToString(mTestStatus_t status)
 {
     switch(status)
     {
-        case MMT_PASSED:
-            return "MMT_PASSED";
-        case MMT_ALLOCS_NOT_FREED:
-            return "MMT_ALLOCS_NOT_FREED";
-        case MMT_INVALID_FREE_ATTEMPTS:
-            return "MMT_INVALID_FREE_ATTEMPTS";
+        case MT_PASSED:
+            return "MT_PASSED";
+        case MT_ALLOCS_NOT_FREED:
+            return "MT_ALLOCS_NOT_FREED";
+        case MT_INVALID_FREE_ATTEMPTS:
+            return "MT_INVALID_FREE_ATTEMPTS";
         default:
             return "NO_STATUS";
     }

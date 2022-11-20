@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include "linked_list.h"
 
-#if (MEM_MANAGEMENT_TEST)
-    #include "mem_management_test.h"
+#if (MEM_TEST)
+    #include "mem_test.h"
 #endif
 
 typedef struct TestData
@@ -1617,9 +1617,9 @@ int main(void)
     }
 
     // ----------------------------------------------------------------------------------------------------------------
-    // Memory management test (set MEM_MANAGEMENT_TEST to 1 to keep track of allocated memory):
-    #if (MEM_MANAGEMENT_TEST)
-        printf("---> Memory management test status: %s\n\n", mmTestStatusToString(mmtGetStatus()));
+    // Memory management test (set MEM_TEST to 1 to keep track of allocated memory):
+    #if (MEM_TEST)
+        printf("---> Memory management test status: %s\n\n", mTestStatusToString(mtGetStatus()));
     #endif
 
     return 0;

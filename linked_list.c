@@ -1,11 +1,11 @@
 #include "linked_list.h"
 #include <stdio.h>
 
-/* MEM_MANAGEMENT_TEST should be 0 by default. Only set it to 1 when testing the API. */
-#if (MEM_MANAGEMENT_TEST)
-    #include "mem_management_test.h"
-    #define malloc  mmtMalloc
-    #define free    mmtFree
+/* MEM_TEST should be 0 by default. Only set it to 1 when testing the API. */
+#if (MEM_TEST)
+    #include "mem_test.h"
+    #define malloc  mtMalloc
+    #define free    mtFree
 #else
     #include <stdlib.h>
 #endif
