@@ -106,6 +106,7 @@ int main(void)
         ListNode_t* nullNode = NULL;
         ExpectResponse(InsertAfterNode(nullNode, &dummyData), LST_E_INVALID_NODE);
         ExpectResponse(RemoveNode(nullNode), LST_E_INVALID_NODE);
+        ExpectResponse(SetNodeData(nullNode, &dummyData), LST_E_INVALID_NODE);
     }
     TestEnd();
 
@@ -159,6 +160,9 @@ int main(void)
 
         // Try removing NULL data from a list that has at least one node.
         ExpectResponse(RemoveNodeByData(sList, nullData), LST_E_INVALID_DATA);
+
+        // Try setting the data of an existing node to NULL
+        ExpectResponse(SetNodeData(GetHeadNode(sList), nullData), LST_E_INVALID_DATA);
 
         // Cleanup
         ExpectResponse(DeleteList(sList), LST_E_SUCCESS);
@@ -1605,6 +1609,40 @@ int main(void)
     }
     TestEnd();
 
+    // ----------------------------------------------------------------------------------------------------------------
+    TestStart("Test 32: Set node data for a valid node returns LST_E_SUCCESS");
+    {
+        // Create a valid empty doubly-linked list
+        List_t* dList = NewList(LST_L_DOUBLE);
+        ExpectEmptyList(dList);
+
+        // Precondition: insert 1 node
+        ExpectResponse(InsertToFront(dList, &testData[3]), LST_E_SUCCESS);
+        ExpectListWith1Node(dList, testData[3].id);
+        ExpectEqualPtr(GetNodeData(GetHeadNode(dList)), &testData[3]);
+
+        // Change the head node data in a list with one node
+        ExpectResponse(SetNodeData(GetHeadNode(dList), &testData[4]), LST_E_SUCCESS);
+        ExpectListWith1Node(dList, testData[4].id);
+        ExpectEqualPtr(GetNodeData(GetHeadNode(dList)), &testData[4]);
+
+        // Precondition: insert 1 more node
+        ExpectResponse(InsertToFront(dList, &testData[0]), LST_E_SUCCESS);
+        ExpectListWith2Nodes(dList, testData[0].id, testData[4].id);
+        ExpectEqualPtr(GetNodeData(GetHeadNode(dList)), &testData[0]);
+        ExpectEqualPtr(GetNodeData(GetTailNode(dList)), &testData[4]);
+
+        // Change the head and tail data in a list with two nodes
+        ExpectResponse(SetNodeData(GetHeadNode(dList), &testData[1]), LST_E_SUCCESS);
+        ExpectResponse(SetNodeData(GetTailNode(dList), &testData[2]), LST_E_SUCCESS);
+        ExpectListWith2Nodes(dList, testData[1].id, testData[2].id);
+        ExpectEqualPtr(GetNodeData(GetHeadNode(dList)), &testData[1]);
+        ExpectEqualPtr(GetNodeData(GetTailNode(dList)), &testData[2]);
+
+        // Cleanup
+        ExpectResponse(DeleteList(dList), LST_E_SUCCESS);
+    }
+    TestEnd();
 
     // ----------------------------------------------------------------------------------------------------------------
     // Test report:

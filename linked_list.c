@@ -184,6 +184,28 @@ ListError_t InsertAfterNode(ListNode_t* node, void* data)
     return LST_E_SUCCESS;
 }
 
+ListError_t SetNodeData(ListNode_t* node, void* data)
+{
+    if(node == NULL)
+    {
+        return LST_E_INVALID_NODE;
+    }
+
+    if(data == NULL)
+    {
+        return LST_E_INVALID_DATA;
+    }
+
+    ListError_t err = ValidateList(node->ownerList);
+    if (err != LST_E_SUCCESS)
+    {
+        return err;
+    }
+
+    node->data = data;
+    return LST_E_SUCCESS;
+}
+
 ListError_t InsertAfterData(List_t* list, void* existingData, void* newData)
 {    
     ListError_t err = ValidateList(list);

@@ -95,6 +95,12 @@ ListNode_t* GetPrevNode(ListNode_t* node);
 void* GetNodeData(ListNode_t* node);
 
 
+/* Sets the data contained by the given node to the given data. Returns LST_E_SUCCESS on success.
+   Returns an error if any of the arguments is NULL, or if the list referenced by the node argument
+   is NULL, invalid, or empty. */
+ListError_t SetNodeData(ListNode_t* node, void* data);
+
+
 /* Returns the first node in the list that contains the given data. Returns NULL if any of the
    arguments is NULL, if list is empty or invalid, or the given data is not found in the list. */
 ListNode_t* GetNodeByData(List_t* list, void* data);
