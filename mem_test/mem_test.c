@@ -1,5 +1,7 @@
 #include "mem_test.h"
 
+#define MAX_NUM_ALLOCS  1000
+
 typedef enum
 {
     FALSE = 0,

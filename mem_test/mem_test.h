@@ -1,10 +1,7 @@
-
 #ifndef MEM_TEST_H
 #define MEM_TEST_H
 
 #include <stdlib.h>
-
-#define MAX_NUM_ALLOCS  1000
 
 typedef enum
 {

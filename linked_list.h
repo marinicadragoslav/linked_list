@@ -15,9 +15,6 @@
 #ifndef LINKED_LIST_H
 #define LINKED_LIST_H
 
-#define MEM_TEST 0 /* Default value: 0. Set to 1 only when testing the API. */
-
-
 /* Type of linkage for a list: single or double. */
 typedef enum
 {
