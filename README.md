@@ -19,7 +19,7 @@ Run these commands from the linked_list folder to get started (gcc must be insta
       `$ ./test.out`<br />
 
    - Tests including memory management:<br />
-   1. add `#include "mem_test_enab.h"` in **linked_list.h** after '#define LINKED_LIST_H'<br />
+   1. add `#include "mem_test_enab.h"` in **linked_list.h** after `#define LINKED_LIST_H`<br />
    2. run test:<br />
       `$ gcc -I . -I mem_test/ -o test.out tests/tests.c linked_list.c mem_test/mem_test.c`<br />
       `$ ./test.out`<br />
@@ -35,7 +35,7 @@ Run these commands from the linked_list folder to get started (gcc must be insta
       `.\test.exe`<br />
 
    - Tests including memory management:<br />
-   1. add `#include "mem_test_enab.h"` in **linked_list.h** after '#define LINKED_LIST_H'<br />
+   1. add `#include "mem_test_enab.h"` in **linked_list.h** after `#define LINKED_LIST_H`<br />
    2. run test:<br />
       `gcc -o test.exe -I . -I .\mem_test\ .\tests\tests.c .\linked_list.c .\mem_test\mem_test.c`<br />
       `.\test.exe`<br />
