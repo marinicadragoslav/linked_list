@@ -1,75 +1,75 @@
+
+
 #include <stdio.h>
 #include "linked_list.h"
 
 int main(void)
 {
-    // Create list
+    /* Create list */
     List_t* List = NewList(LL_DOUBLE);
 
-    // Add some data to the list. Void pointers are added as data.
-    float pi = 3.14, sqrt2 = 1.4142, ln2 = 0.693;
-    if ((AddToBack(List, &pi) == LL_OK) &&
-        (AddToFront(List, &sqrt2) == LL_OK) &&
-        (AddToBack(List, &ln2) == LL_OK))
+    /* Add some data to the list. Void pointers are added as data. */
+    float Pi = 3.14, Sqrt2 = 1.4142, Ln2 = 0.693;
+    if ((AddToBack(List, &Pi) == LL_OK) &&
+        (AddToFront(List, &Sqrt2) == LL_OK) &&
+        (AddToBack(List, &Ln2) == LL_OK))
     {
         printf("\nSuccesfully added 3 nodes (1.4142, 3.14, 0.693) to the list!\n\n");
     }
 
-    // Iterate through the list and print data
+    /* Iterate through the list and print data */
     printf("List content:\n");
-    ListNode_t* iter = GetHead(List);
-    while(iter)
+    ListNode_t* Iter = GetHead(List);
+    while(Iter)
     {
-        float* dataPtr = (float*)GetData(iter); // Cast void pointer to the original type!
-        printf("---> Node data: %f\n", (*dataPtr));
+        float* DataPtr = (float*)GetData(Iter); /* Cast void pointer to the original type */
+        printf("---> Node data: %f\n", (*DataPtr));
 
-        iter = GetNext(iter);
+        Iter = GetNext(Iter);
     }
     printf("\n");
 
-    // Remove some nodes
+    /* Remove some nodes */
     if ((RemoveHead(List) == LL_OK) &&
         (RemoveTail(List) == LL_OK))
     {
         printf("Succesfully removed first and last node!\n");
     }
 
-    // List has one node => head and tail data should be the same
-    float* head = (float*)GetData(GetHead(List));
-    float* tail = (float*)GetData(GetTail(List));
-    printf("Head data: %f, tail data: %f. Head node should be the same as tail node.\n\n", *head, *tail);
+    /* List has one node => head and tail data should be the same */
+    float* HeadData = (float*)GetData(GetHead(List));
+    float* TailData = (float*)GetData(GetTail(List));
+    printf("Head data: %f, tail data: %f. Head node should be the same as tail node.\n\n", *HeadData, *TailData);
 
-    // Add another node
-    float half = 0.5;
-    if (AddToFront(List, &half) == LL_OK)
+    /* Add another node */
+    float Half = 0.5;
+    if (AddToFront(List, &Half) == LL_OK)
     {
         printf("Added 0.5 to list!\n\n");
     }
 
-    // Search for a node by data, then remove it
-    ListNode_t* piNode = GetNodeByData(List, &pi);
-    if (RemoveNode(piNode) == LL_OK)
+    /* Search for a node by data, then remove it */
+    ListNode_t* PiNode = GetNodeByData(List, &Pi);
+    if (RemoveNode(PiNode) == LL_OK)
     {
         printf("Succesfully removed 3.14 from the list!\n\n");
     }
 
-    // Iterate through the list again
+    /* Iterate through the list again */
     printf("List content:\n");
-    iter = GetHead(List);
-    while(iter)
+    Iter = GetHead(List);
+    while(Iter)
     {
-        float* dataPtr = (float*)GetData(iter);
-        printf("---> Node data: %f\n", *dataPtr);
+        float* DataPtr = (float*)GetData(Iter);
+        printf("---> Node data: %f\n", *DataPtr);
 
-        iter = GetNext(iter);
+        Iter = GetNext(Iter);
     }
     printf("\n");
 
-    // Cleanup 
+    /* Cleanup */
     if(DeleteList(List) == LL_OK)
     {
         printf("Cleanup successful!\n\n");
     }
-
-    List = NULL; // Reinit list pointer for future use.
 }
