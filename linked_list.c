@@ -1,562 +1,509 @@
 #include <stdlib.h>
 #include "linked_list.h"
 
-static ListError_t ValidateList(List_t* list);
-static ListNode_t* NewNode(void);
-static void DeleteHead(List_t* list);
-static void DeleteTail(List_t* list);
-static ListNode_t* FindNodeByData(List_t* list, void* data);
-static ListNode_t* FindPrevNodeByData(List_t* list, void* data);
-static ListNode_t* FindPrevNode(ListNode_t* node);
-static void InsertNewNodeAfterNode(ListNode_t* new, ListNode_t* existing);
-static void DeleteInnerNode(ListNode_t* node, ListNode_t* prev);
+static ListBool_t _IsValid(List_t* List);
+static ListBool_t _IsValidAndNotEmpty(List_t* List);
+static ListNode_t* _FindNodeByData(List_t* List, void* Data);
+static ListNode_t* _NewNode(void);
+static void _DeleteHead(List_t* List);
+static void _DeleteTail(List_t* List);
+static ListNode_t* _FindPrevNode(ListNode_t* Node);
+static ListNode_t* _FindPrevNodeByData(List_t* List, void* Data);
+static void _InsertNewNodeAfterNode(ListNode_t* New, ListNode_t* Existing);
+static void _DeleteInnerNode(ListNode_t* Node, ListNode_t* Prev);
 
 
-List_t* NewList(Linkage_t linkage)
+List_t* NewList(ListLinkage_t Linkage)
 {
-    if (linkage != LST_L_DOUBLE)
-    {
-        linkage = LST_L_SINGLE;
-    }
-
-    List_t* list = malloc(sizeof(List_t));
-    if(!list)
+    if ((Linkage != LL_SINGLE) && (Linkage != LL_DOUBLE))
     {
         return NULL;
     }
 
-    list->head = NULL;
-    list->tail = NULL;
-    list->numNodes = 0;
-    list->linkage = linkage;
+    List_t* List = malloc(sizeof(List_t));
 
-    return list;
+    if (List)
+    {
+        List->Head = NULL;
+        List->Tail = NULL;
+        List->Count = 0;
+        List->Linkage = Linkage;
+    }
+
+    return List;
 }
 
-ListNode_t* GetHeadNode(List_t* list)
+
+ListNode_t* GetHead(List_t* List)
 {
-    return (list ? list->head : NULL);
+    return (List ? List->Head : NULL);
 }
 
-ListNode_t* GetTailNode(List_t* list)
+
+ListNode_t* GetTail(List_t* List)
 {
-    return (list ? list->tail : NULL);
+    return (List ? List->Tail : NULL);
 }
 
-ListNode_t* GetNextNode(ListNode_t* node)
+
+ListNode_t* GetNext(ListNode_t* Node)
 {
-    return (node ? node->next : NULL);
+    return (Node ? Node->Next : NULL);
 }
 
-ListNode_t* GetPrevNode(ListNode_t* node)
+
+ListNode_t* GetPrev(ListNode_t* Node)
 {
-    return ((node && (node->ownerList->linkage == LST_L_DOUBLE)) ? node->prev : NULL);
+    return ((Node && (Node->Owner->Linkage == LL_DOUBLE)) ? Node->Prev : NULL);
 }
 
-void* GetNodeData(ListNode_t* node)
+
+void* GetData(ListNode_t* Node)
 {
-    return (node ? node->data : NULL);
+    return (Node ? Node->Data : NULL);
 }
 
-ListNode_t* GetNodeByData(List_t* list, void* data)
+
+ListNode_t* GetNodeByData(List_t* List, void* Data)
 {
-    if ((ValidateList(list) != LST_E_SUCCESS) || (data == NULL)) 
+    if ( _IsValidAndNotEmpty(List) && Data)
     {
-        return NULL;
+        return _FindNodeByData(List, Data);
     }
 
-    return FindNodeByData(list, data);
+    return NULL;
 }
 
-ListError_t InsertToFront(List_t* list, void* data)
+
+ListStatus_t AddToFront(List_t* List, void* Data)
 {
-    if (ValidateList(list) == LST_E_INVALID_LIST)
+    if (_IsValid(List) && Data)
     {
-        return LST_E_INVALID_LIST;
-    }
+        ListNode_t* Node = _NewNode();
 
-    if (data == NULL)
-    {
-        return LST_E_INVALID_DATA;
-    }
-
-    ListNode_t* node = NewNode();
-    if(!node)
-    {
-        return LST_E_MEM_ALLOC;
-    }
-
-    node->next = list->head;
-    if (list->head)
-    {
-        list->head->prev = (list->linkage == LST_L_DOUBLE ? node : NULL);
-    }
-
-    list->head = node;
-    if(list->numNodes == 0)
-    {        
-        list->tail = node;
-    }
-
-    node->data = data;
-    node->ownerList = list;
-
-    list->numNodes++;
-    return LST_E_SUCCESS;
-}
-
-ListError_t InsertToBack(List_t* list, void* data)
-{
-    if (ValidateList(list) == LST_E_INVALID_LIST)
-    {
-        return LST_E_INVALID_LIST;
-    }
-
-    if (data == NULL)
-    {
-        return LST_E_INVALID_DATA;
-    }
-
-    ListNode_t* node = NewNode();
-    if(!node)
-    {
-        return LST_E_MEM_ALLOC;
-    } 
-
-    node->prev = (list->linkage == LST_L_DOUBLE ? list->tail : NULL);
-    if (list->tail)
-    {
-        list->tail->next = node;
-    }
-
-    list->tail = node;
-    if(list->numNodes == 0)
-    {
-        list->head = node;
-    }
-
-    node->data = data;
-    node->ownerList = list;
-
-    list->numNodes++;
-    return LST_E_SUCCESS;
-}
-
-ListError_t InsertAfterNode(ListNode_t* node, void* data)
-{
-    if(node == NULL)
-    {
-        return LST_E_INVALID_NODE;
-    }
-
-    if(data == NULL)
-    {
-        return LST_E_INVALID_DATA;
-    }
-    
-    ListError_t err = ValidateList(node->ownerList);
-    if (err != LST_E_SUCCESS)
-    {
-        return err;
-    }
-
-    ListNode_t* newNode = NewNode();
-    if(newNode == NULL)
-    {
-        return LST_E_MEM_ALLOC;
-    }
-    
-    InsertNewNodeAfterNode(newNode, node);
-
-    newNode->data = data;
-    newNode->ownerList = node->ownerList;
-
-    newNode->ownerList->numNodes++;
-    return LST_E_SUCCESS;
-}
-
-ListError_t SetNodeData(ListNode_t* node, void* data)
-{
-    if(node == NULL)
-    {
-        return LST_E_INVALID_NODE;
-    }
-
-    if(data == NULL)
-    {
-        return LST_E_INVALID_DATA;
-    }
-
-    ListError_t err = ValidateList(node->ownerList);
-    if (err != LST_E_SUCCESS)
-    {
-        return err;
-    }
-
-    node->data = data;
-    return LST_E_SUCCESS;
-}
-
-ListError_t InsertAfterData(List_t* list, void* existingData, void* newData)
-{    
-    ListError_t err = ValidateList(list);
-    if (err != LST_E_SUCCESS)
-    {
-        return err;
-    }
-
-    if(existingData == NULL || newData == NULL)
-    {
-        return LST_E_INVALID_DATA;
-    }
-
-    ListNode_t* node = FindNodeByData(list, existingData);
-    if(node == NULL)
-    {
-        return LST_E_NOT_FOUND;
-    }
-    
-    ListNode_t* newNode = NewNode();
-    if(newNode == NULL)
-    {
-        return LST_E_MEM_ALLOC;
-    }
-
-    InsertNewNodeAfterNode(newNode, node);
-
-    newNode->data = newData;
-    newNode->ownerList = node->ownerList;
-
-    list->numNodes++;
-    return LST_E_SUCCESS;
-}
-
-ListError_t RemoveFirstNode(List_t* list)
-{
-    ListError_t err = ValidateList(list);
-    if (err != LST_E_SUCCESS)
-    {
-        return err;
-    }
-
-    // List is valid, not-empty, has a valid head
-    DeleteHead(list);
-    return LST_E_SUCCESS;
-}
-
-ListError_t RemoveLastNode(List_t* list)
-{
-    ListError_t err = ValidateList(list);
-    if (err != LST_E_SUCCESS)
-    {
-        return err;
-    }
-
-    // List is valid, not-empty, has a valid tail
-    DeleteTail(list);
-    return LST_E_SUCCESS;
-}
-
-ListError_t RemoveNode(ListNode_t* node)
-{
-    if(node == NULL)
-    {
-        return LST_E_INVALID_NODE;
-    }
-
-    ListError_t err = ValidateList(node->ownerList);
-    if (err != LST_E_SUCCESS)
-    {
-        return err;
-    }
-
-    if(node == node->ownerList->head)
-    {
-        DeleteHead(node->ownerList);
-        return LST_E_SUCCESS;
-    }
-    else if(node == node->ownerList->tail)
-    {
-        DeleteTail(node->ownerList);
-        return LST_E_SUCCESS;
-    }
-    else
-    {
-        // Get previous node
-        ListNode_t* prev;
-        if (node->ownerList->linkage == LST_L_DOUBLE)
+        if (Node)
         {
-            prev = node->prev;
+            /* Fwd link to old head */
+            Node->Next = List->Head;
+
+            /* Bwd link from old head */
+            if (List->Head && (List->Linkage == LL_DOUBLE))
+            {
+                List->Head->Prev = Node;
+            }
+
+            /* Update head */
+            List->Head = Node;
+
+            /* If the list was empty, update tail */
+            if(List->Count == 0)
+            {
+                List->Tail = Node;
+            }
+
+            /* Update node data and owner list, update list count */
+            Node->Data = Data;
+            Node->Owner = List;
+            List->Count++;
+
+            return LL_OK;
+        }
+    }
+
+    return LL_NOT_OK;
+}
+
+
+ListStatus_t AddToBack(List_t* List, void* Data) 
+{
+    if (_IsValid(List) && Data)
+    {
+        ListNode_t* Node = _NewNode();
+        
+        if (Node)
+        {
+            /* Bwd link new node to old tail */
+            if (List->Linkage == LL_DOUBLE)
+            {
+                Node->Prev = List->Tail;
+            }
+
+            /* Fwd link from old tail */
+            if (List->Tail)
+            {
+                List->Tail->Next = Node;
+            }
+
+            /* Update Tail */
+            List->Tail = Node;
+
+            /* If the list was empty, update the head */
+            if(List->Count == 0)
+            {
+                List->Head = Node;
+            }
+
+            /* Update node data and owner list, update list count */
+            Node->Data = Data;
+            Node->Owner = List;
+            List->Count++;
+
+            return LL_OK;
+        }
+    }
+
+    return LL_NOT_OK;
+}
+
+
+ListStatus_t InsertAfterNode(ListNode_t* Node, void* Data)
+{
+    if (Node && Data && _IsValidAndNotEmpty(Node->Owner))
+    {
+        ListNode_t* NewNode = _NewNode();
+        if (NewNode)
+        {
+            _InsertNewNodeAfterNode(NewNode, Node);
+
+            NewNode->Data = Data;
+            NewNode->Owner = Node->Owner;
+            NewNode->Owner->Count++;
+
+            return LL_OK;
+        }
+    }
+
+    return LL_NOT_OK;
+}
+
+ListStatus_t SetData(ListNode_t* Node, void* Data)
+{
+    if (Node && Data && _IsValidAndNotEmpty(Node->Owner))
+    {
+        Node->Data = Data;
+        return LL_OK;
+    }
+
+    return LL_NOT_OK;
+}
+
+ListStatus_t InsertAfterData(List_t* List, void* ExistingData, void* NewData)
+{    
+    if (ExistingData && NewData && _IsValidAndNotEmpty(List))
+    {
+        ListNode_t* Node = _FindNodeByData(List, ExistingData);
+        if (Node)
+        {
+            ListNode_t* NewNode = _NewNode();
+            if (NewNode)
+            {
+                _InsertNewNodeAfterNode(NewNode, Node);
+
+                NewNode->Data = NewData;
+                NewNode->Owner = Node->Owner;
+                List->Count++;
+
+                return LL_OK;
+            }
+        }
+    }
+
+    return LL_NOT_OK;
+}
+
+ListStatus_t RemoveHead(List_t* List)
+{
+    if (_IsValidAndNotEmpty(List))
+    {
+        _DeleteHead(List);
+        return LL_OK;
+    }
+
+    return LL_NOT_OK;
+}
+
+ListStatus_t RemoveTail(List_t* List)
+{
+    if (_IsValidAndNotEmpty(List))
+    {
+        _DeleteTail(List);
+        return LL_OK;
+    }
+
+    return LL_NOT_OK;
+}
+
+ListStatus_t RemoveNode(ListNode_t* Node)
+{
+    if (Node && _IsValidAndNotEmpty(Node->Owner))
+    {
+        if(Node == Node->Owner->Head)
+        {
+            _DeleteHead(Node->Owner);
+            return LL_OK;
+        }
+        else if(Node == Node->Owner->Tail)
+        {
+            _DeleteTail(Node->Owner);
+            return LL_OK;
         }
         else
         {
-            prev = FindPrevNode(node);
+            /* Get prev node */
+            ListNode_t* Prev = (Node->Owner->Linkage == LL_DOUBLE ? Node->Prev : _FindPrevNode(Node));
+
+            if (Prev)
+            {
+                /* Bypass node (link fwd) */
+                Prev->Next = Node->Next;
+
+                if (Node->Owner->Linkage == LL_DOUBLE)
+                {
+                    /* Bypass node (link bwd) */
+                    Node->Next->Prev = Prev;
+                }
+
+                /* Remove node */
+                Node->Owner->Count--;
+                free(Node);
+
+                return LL_OK;
+            }
         }
-
-        if (!prev)
-        {
-            return LST_E_NOT_FOUND;
-        }
-
-        // Bypass node (link forward)
-        prev->next = node->next;
-
-        if (node->ownerList->linkage == LST_L_DOUBLE)
-        {
-            // Bypass node (link backwards)
-            node->next->prev = prev;
-        }
-
-        // Remove node
-        node->ownerList->numNodes--;
-        free(node);
-
-        return LST_E_SUCCESS;
     }
+
+    return LL_NOT_OK;
 }
 
-ListError_t RemoveNodeByData(List_t* list, void* data)
+ListStatus_t RemoveNodeByData(List_t* List, void* Data)
 {
-    ListError_t err = ValidateList(list);
-    if (err != LST_E_SUCCESS)
+    if (Data && _IsValidAndNotEmpty(List))
     {
-        return err;
-    }
-
-    if(data == NULL)
-    {
-        return LST_E_INVALID_DATA;
-    }
-
-    // List is valid, not-empty, has valid head and tail. Look in the head first.
-    if(list->head->data == data)
-    {
-        DeleteHead(list);
-        return LST_E_SUCCESS;
-    }
-    else
-    {
-        ListNode_t* prev = FindPrevNodeByData(list, data);
-
-        if (!prev)
+        if(List->Head->Data == Data)
         {
-            // No prev node found => data is not in the list.
-            return LST_E_NOT_FOUND;
-        }
-
-        ListNode_t* node = prev->next;
-        if (node == list->tail)
-        {
-            DeleteTail(list);
+            _DeleteHead(List);
         }
         else
         {
-            DeleteInnerNode(node, prev);
+            ListNode_t* Prev = _FindPrevNodeByData(List, Data);
+            if(Prev)
+            {
+                ListNode_t* Node = Prev->Next;
+                if (Node == List->Tail)
+                {
+                    _DeleteTail(List);
+                }
+                else
+                {
+                    _DeleteInnerNode(Node, Prev);
+                }
+            }
+            else
+            {
+                return LL_NOT_OK;
+            }
         }
 
-        return LST_E_SUCCESS;
+        return LL_OK;
     }
+
+    return LL_NOT_OK;
 }
 
-ListError_t GetNodeCount(List_t* list, unsigned int* countOut)
+ListStatus_t GetCount(List_t* List, unsigned int* Count)
 {
-    if (list == NULL)
+    if (List && Count)
     {
-        return LST_E_INVALID_LIST;
+        *Count = List->Count;
+        return LL_OK;
     }
 
-    if (countOut == NULL)
-    {
-        return LST_E_INVALID_COUNT;
-    }
-
-    *countOut = list->numNodes;
-    return LST_E_SUCCESS;
+    return LL_NOT_OK;
 }
 
-ListError_t DeleteList(List_t* list)
+ListStatus_t DeleteList(List_t* List)
 {
-    if (list == NULL)
+    if (List)
     {
-        return LST_E_INVALID_LIST;
-    }
-
-    // Remove any existing nodes first
-    while(RemoveFirstNode(list) == LST_E_SUCCESS)
-    {}
-
-    free(list);
-    return LST_E_SUCCESS;
-}
-
-static ListError_t ValidateList(List_t* list)
-{
-    if (list == NULL)
-    {
-        return LST_E_INVALID_LIST;
-    }
-    else if (list->numNodes == 0)
-    {
-        return LST_E_EMPTY_LIST;
-    }
-    else if (!list->head || !list->tail)
-    {
-        return LST_E_INVALID_LIST;
-    }
-   
-    return LST_E_SUCCESS;
-}
-
-static ListNode_t* NewNode(void)
-{
-    ListNode_t* node = malloc(sizeof(ListNode_t));
-    if(node == NULL)
-    {
-        return NULL;
-    }
-
-    node->data = NULL;
-    node->next = NULL;
-    node->prev = NULL;
-
-    return node;
-}
-
-static void DeleteHead(List_t* list)
-{    
-    // Save head
-    ListNode_t* temp = list->head;
-
-    // Change head
-    list->head = list->head->next;
-
-    // Update head (remove backward link)
-    if(list->head)
-    {
-        list->head->prev = NULL;
-    }
-    else
-    {
-        // Change the tail too if the there was only one node in the list
-        list->tail = NULL;
-    }
-
-    // Remove old head
-    list->numNodes--;
-    free(temp);
-}
-
-static void DeleteTail(List_t* list)
-{    
-    // Save tail
-    ListNode_t* temp = list->tail;
-
-    // Change tail
-    if (list->linkage == LST_L_DOUBLE)
-    {
-        list->tail = list->tail->prev;
-    }
-    else
-    {
-        list->tail = FindPrevNode(list->tail);
-    }
-
-    // Update tail (remove forward link)
-    if(list->tail)
-    {
-        list->tail->next = NULL;
-    }
-    else
-    {
-        // Change the head too if the there was only one node in the list
-        list->head = NULL;
-    }
-
-    // Remove old tail
-    list->numNodes--;
-    free(temp);
-}
-
-static ListNode_t* FindNodeByData(List_t* list, void* data)
-{
-    ListNode_t* iter = list->head;
-    while(iter)
-    {
-        if (iter->data == data)
+        /* Remove any existing nodes first */
+        while(RemoveHead(List) == LL_OK)
         {
-            return iter;
+            ;
         }
-        iter = iter->next;
+
+        free(List);
+        return LL_OK;
+    }
+
+    return LL_NOT_OK;
+}
+
+static ListBool_t _IsValid(List_t* List)
+{
+    return (!List ? LL_FALSE : LL_TRUE);
+}
+
+static ListBool_t _IsValidAndNotEmpty(List_t* List)
+{
+    return ((!List) || (List->Count == 0) || (!List->Head) || (!List->Tail) ? LL_FALSE : LL_TRUE);
+}
+
+static ListNode_t* _FindNodeByData(List_t* List, void* Data)
+{
+    ListNode_t* Iter = List->Head;
+    while(Iter)
+    {
+        if (Iter->Data == Data)
+        {
+            return Iter;
+        }
+        Iter = Iter->Next;
     }
 
     return NULL;
 }
 
-static ListNode_t* FindPrevNodeByData(List_t* list, void* data)
+static ListNode_t* _NewNode(void)
 {
-    ListNode_t* iter = list->head;
-    while(iter && iter->next)
+    ListNode_t* Node = malloc(sizeof(ListNode_t));
+    if (Node)
     {
-        if (iter->next->data == data)
+        Node->Data = NULL;
+        Node->Next = NULL;
+        Node->Prev = NULL;
+    }
+
+    return Node;
+}
+
+/* Assumes List is valid and not-empty */
+static void _DeleteHead(List_t* List)
+{
+    /* Save head */
+    ListNode_t* OldHead = List->Head;
+
+    /* Change head */
+    List->Head = List->Head->Next;
+
+    /* Update head (remove backward link) */
+    if(List->Head)
+    {
+        if (List->Linkage == LL_DOUBLE)
         {
-            return iter;
+            List->Head->Prev = NULL;
         }
-        iter = iter->next;
+    }
+    else
+    {
+        /* Change the tail too if the there was only one node in the list */
+        List->Tail = NULL;
+    }
+
+    /* Remove old head */
+    List->Count--;
+    free(OldHead);
+}
+
+/* Assumes List is valid and not-empty */
+static void _DeleteTail(List_t* List)
+{
+    /* Save tail */
+    ListNode_t* Temp = List->Tail;
+
+    /* Change tail */
+    if (List->Linkage == LL_DOUBLE)
+    {
+        List->Tail = List->Tail->Prev;
+    }
+    else
+    {
+        List->Tail = _FindPrevNode(List->Tail);
+    }
+
+    /* Update tail (remove fwd link) */
+    if(List->Tail)
+    {
+        List->Tail->Next = NULL;
+    }
+    else
+    {
+        /* Change the head too if the there was only one node in the list */
+        List->Head = NULL;
+    }
+
+    /* Remove old tail */
+    List->Count--;
+    free(Temp);
+}
+
+
+static ListNode_t* _FindPrevNode(ListNode_t* Node)
+{
+    ListNode_t* Iter = Node->Owner->Head;
+    while (Iter)
+    {
+        if (Iter->Next == Node)
+        {
+            return Iter;
+        }
+        Iter = Iter->Next;
     }
 
     return NULL;
 }
 
-static ListNode_t* FindPrevNode(ListNode_t* node)
+
+static ListNode_t* _FindPrevNodeByData(List_t* List, void* Data)
 {
-    ListNode_t* iter = node->ownerList->head;
-    while (iter)
+    ListNode_t* Iter = List->Head;
+    while(Iter && Iter->Next)
     {
-        if (iter->next == node)
+        if (Iter->Next->Data == Data)
         {
-            return iter;
+            return Iter;
         }
-        iter = iter->next;
+        Iter = Iter->Next;
     }
 
     return NULL;
 }
 
-static void InsertNewNodeAfterNode(ListNode_t* new, ListNode_t* existing)
-{
-    // Fwd links
-    new->next = existing->next;
-    existing->next = new;
 
-    // Bckwd links
-    if (existing->ownerList->linkage == LST_L_DOUBLE)
+static void _InsertNewNodeAfterNode(ListNode_t* New, ListNode_t* Existing)
+{
+    /* Fwd links */
+    New->Next = Existing->Next;
+    Existing->Next = New;
+
+    /* Bwd links */
+    if (Existing->Owner->Linkage == LL_DOUBLE)
     {
-        new->prev = existing;
-        if(new->next)
+        New->Prev = Existing;
+        if(New->Next)
         {
-            new->next->prev = new;
+            New->Next->Prev = New;
         }
     }
 
-    // Update list tail if applicable
-    if(existing->ownerList->tail == existing)
+    /* Update list tail if applicable */
+    if(Existing->Owner->Tail == Existing)
     {
-        existing->ownerList->tail = new;
+        Existing->Owner->Tail = New;
     }
 }
 
-static void DeleteInnerNode(ListNode_t* node, ListNode_t* prev)
+static void _DeleteInnerNode(ListNode_t* Node, ListNode_t* Prev)
 {
-    // Bypass node (link forward)
-    prev->next = node->next;
+    /* Bypass node (link fwd) */
+    Prev->Next = Node->Next;
 
-    if (node->ownerList->linkage == LST_L_DOUBLE)
+    if (Node->Owner->Linkage == LL_DOUBLE)
     {
-        // Bypass node (link backwards)
-        node->next->prev = prev;
+        /* Bypass node (link backwards) */
+        Node->Next->Prev = Prev;
     }
 
-    // Remove node
-    node->ownerList->numNodes--;
-    free(node);
+    /* Remove node */
+    Node->Owner->Count--;
+    free(Node);
 }
