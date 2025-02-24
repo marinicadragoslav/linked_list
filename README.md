@@ -15,7 +15,7 @@ Run these commands from the linked_list folder to get started (gcc must be insta
       `$ gcc -I. -o ex.out example/example.c linked_list.c`<br />
       `$ ./ex.out`<br />
    - Windows:<br />
-      `gcc -o ex.exe -I. .\example\example.c .\linked_list.c`<br />
+      `gcc -o ex.exe -I. example\example.c linked_list.c`<br />
       `.\ex.exe`<br />
 
 ## Tests without memory management:
@@ -23,7 +23,7 @@ Run these commands from the linked_list folder to get started (gcc must be insta
       `$ gcc -I. -o test.out tests/tests.c linked_list.c`<br />
       `$ ./test.out`<br />
    - Windows:<br />
-      `gcc -o test.exe -I. .\tests\tests.c .\linked_list.c`<br />
+      `gcc -o test.exe -I. tests\tests.c linked_list.c`<br />
       `.\test.exe`<br />
 
 ## Tests with memory management:
@@ -33,7 +33,7 @@ Run these commands from the linked_list folder to get started (gcc must be insta
               `$ gcc -I. -Imem_test/ -o test.out tests/tests.c linked_list.c mem_test/mem_test.c`<br />
               `$ ./test.out`<br />
         - Windows:<br />
-              `gcc -o test.exe -I. -I.\mem_test\ .\tests\tests.c .\linked_list.c .\mem_test\mem_test.c`<br />
+              `gcc -o test.exe -I. -Imem_test\ tests\tests.c linked_list.c mem_test\mem_test.c`<br />
               `.\test.exe`<br />   
    - remove `#include "mem_test_enab.h"`<br />
 <br />
