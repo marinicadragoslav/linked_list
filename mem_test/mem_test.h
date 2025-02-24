@@ -5,15 +5,15 @@
 
 typedef enum
 {
-    MT_PASSED = 0,             // allocated memory was correctly freed
-    MT_ALLOCS_NOT_FREED,       // there is allocated memory that was not freed
-    MT_INVALID_FREE_ATTEMPTS,  // there were attempts to free unallocated memory
-}mTestStatus_t;
+    MT_PASSED = 0,             /* allocated memory was correctly freed */
+    MT_ALLOCS_NOT_FREED,       /* there is allocated memory that was not freed */
+    MT_INVALID_FREE_ATTEMPTS,  /* there were attempts to free unallocated memory */
+}MtStatus_t;
 
-void* mtMalloc(size_t size);
-void mtFree(void* ptr);
-mTestStatus_t mtGetStatus(void);
-char* mTestStatusToString(mTestStatus_t status);
+void* MtMalloc(size_t size);
+void MtFree(void* ptr);
+MtStatus_t MtGetStatus(void);
+char* MtStatusToString(MtStatus_t status);
 
 
 #endif /* MEM_TEST_H */

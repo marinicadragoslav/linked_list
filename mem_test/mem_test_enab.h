@@ -2,8 +2,8 @@
 #define MEM_TEST_ENAB_H
 
 /* Override standard library functions for testing */
-#define malloc  mtMalloc
-#define free    mtFree
+#define malloc  MtMalloc
+#define free    MtFree
 
 #include "mem_test.h"
 

@@ -2,45 +2,39 @@
 
 #define MAX_NUM_ALLOCS  1000
 
-typedef enum
+static void* RemainingAllocs[MAX_NUM_ALLOCS];
+static unsigned int NumRemainingAllocs = 0;
+static unsigned int InvalidFreeAttempts = 0;
+
+static void _AddAlloc(void* Ptr);
+static void _RemoveAlloc(void* Ptr);
+
+void* MtMalloc(size_t Size)
 {
-    FALSE = 0,
-    TRUE
-}Bool_t;
+    void* Ret = malloc(Size);
 
-void* remainingAllocs[MAX_NUM_ALLOCS];
-unsigned int numRemainingAllocs = 0;
-unsigned int invalidFreeAttempts = 0;
-
-static void AddAlloc(void* ptr);
-static void RemoveAlloc(void* ptr);
-
-void* mtMalloc(size_t size)
-{
-    void* ret = malloc(size);
-
-    if (ret)
+    if (Ret)
     {
-        AddAlloc(ret);
+        _AddAlloc(Ret);
     }
 
-    return ret;
+    return Ret;
 }
 
-void mtFree(void* ptr)
+void MtFree(void* Ptr)
 {
-    RemoveAlloc(ptr);
-    free(ptr);
+    _RemoveAlloc(Ptr);
+    free(Ptr);
 }
 
-mTestStatus_t mtGetStatus(void)
+MtStatus_t MtGetStatus(void)
 {
-    if (numRemainingAllocs == 0 && invalidFreeAttempts == 0)
+    if (NumRemainingAllocs == 0 && InvalidFreeAttempts == 0)
     {
         return MT_PASSED;
     }
 
-    if (invalidFreeAttempts > 0)
+    if (InvalidFreeAttempts > 0)
     {
         return MT_INVALID_FREE_ATTEMPTS;
     }
@@ -48,9 +42,9 @@ mTestStatus_t mtGetStatus(void)
     return MT_ALLOCS_NOT_FREED;
 }
 
-char* mTestStatusToString(mTestStatus_t status)
+char* MtStatusToString(MtStatus_t Status)
 {
-    switch(status)
+    switch(Status)
     {
         case MT_PASSED:
             return "MT_PASSED";
@@ -63,36 +57,36 @@ char* mTestStatusToString(mTestStatus_t status)
     }
 }
 
-static void AddAlloc(void* ptr)
+static void _AddAlloc(void* Ptr)
 {
-    remainingAllocs[numRemainingAllocs++] = ptr;
+    RemainingAllocs[NumRemainingAllocs++] = Ptr;
 }
 
-static void RemoveAlloc(void *ptr)
+static void _RemoveAlloc(void *Ptr)
 {
-    if ((ptr == NULL) || (numRemainingAllocs == 0))
+    if ((Ptr == NULL) || (NumRemainingAllocs == 0))
     {
-        // This pointer was not allocated, or it was already deallocated
-        invalidFreeAttempts++;
+        /* This pointer was not allocated, or it was already deallocated */
+        InvalidFreeAttempts++;
         return;
     }
 
-    // Search for ptr in the array of allocations
-    for (unsigned int i = 0; i < numRemainingAllocs; i++)
+    /* Search for Ptr in the array of allocations */
+    for (unsigned int i = 0; i < NumRemainingAllocs; i++)
     {
-        if (remainingAllocs[i] == ptr)
+        if (RemainingAllocs[i] == Ptr)
         {
-            // Remove the first match of ptr from the array and exit function
-            for (unsigned int j = i; j < (numRemainingAllocs - 1); j++)
+            /* Remove the first match of Ptr from the array and exit function */
+            for (unsigned int j = i; j < (NumRemainingAllocs - 1); j++)
             {
-                remainingAllocs[j] = remainingAllocs[j + 1];
+                RemainingAllocs[j] = RemainingAllocs[j + 1];
             }
-            numRemainingAllocs--;
+            NumRemainingAllocs--;
             return;
         }
     }
 
-    // ptr not found
-    invalidFreeAttempts++;
+    /* Ptr not found */
+    InvalidFreeAttempts++;
 }
 
