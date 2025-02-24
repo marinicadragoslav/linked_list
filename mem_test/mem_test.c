@@ -71,13 +71,15 @@ static void _RemoveAlloc(void *Ptr)
         return;
     }
 
+    unsigned int i, j;
+    
     /* Search for Ptr in the array of allocations */
-    for (unsigned int i = 0; i < NumRemainingAllocs; i++)
+    for (i = 0; i < NumRemainingAllocs; i++)
     {
         if (RemainingAllocs[i] == Ptr)
         {
             /* Remove the first match of Ptr from the array and exit function */
-            for (unsigned int j = i; j < (NumRemainingAllocs - 1); j++)
+            for (j = i; j < (NumRemainingAllocs - 1); j++)
             {
                 RemainingAllocs[j] = RemainingAllocs[j + 1];
             }
