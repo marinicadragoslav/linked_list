@@ -1,4 +1,5 @@
 #include "mem_test.h"
+#include <stdio.h>
 
 #define MAX_NUM_ALLOCS  1000
 
@@ -16,6 +17,8 @@ void* MtMalloc(size_t Size)
     if (Ret)
     {
         _AddAlloc(Ret);
+        printf("MtMalloc(%p)\n", Ret);
+
     }
 
     return Ret;
@@ -24,6 +27,7 @@ void* MtMalloc(size_t Size)
 void MtFree(void* Ptr)
 {
     _RemoveAlloc(Ptr);
+    printf("MtFree(%p)\n", Ptr);
     free(Ptr);
 }
 
