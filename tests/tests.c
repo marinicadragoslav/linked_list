@@ -2028,25 +2028,44 @@ int main(void)
         List_t* NullList = NULL;
         ExpectResponse(LL_RemoveTail(NullList), LL_NOT_OK);
 
-        /* Test 2: Remove from empty list */
-        List_t* EmptyList = LL_NewList(LL_SINGLE);
-        ExpectResponse(LL_RemoveTail(EmptyList), LL_NOT_OK);
+        /* Test 2: Remove from empty s-list */
+        List_t* EmptySList = LL_NewList(LL_SINGLE);
+        ExpectResponse(LL_RemoveTail(EmptySList), LL_NOT_OK);
 
-        /* Test 3: Remove from single-node list */
-        List_t* List = LL_NewList(LL_DOUBLE);
-        ExpectResponse(LL_AddToBack(List, &TestData[0]), LL_OK);
-        ExpectResponse(LL_RemoveTail(List), LL_OK);
-        ExpectEmptyList(List);
+        /* Test 3: Remove from empty d-list */
+        List_t* EmptyDList = LL_NewList(LL_DOUBLE);
+        ExpectResponse(LL_RemoveTail(EmptyDList), LL_NOT_OK);
 
-        /* Test 4: Remove from multi-node list */
-        ExpectResponse(LL_AddToFront(List, &TestData[0]), LL_OK);
-        ExpectResponse(LL_AddToFront(List, &TestData[1]), LL_OK);
-        ExpectResponse(LL_AddToFront(List, &TestData[2]), LL_OK);
-        ExpectResponse(LL_RemoveTail(List), LL_OK);
-        ExpectListWith2Nodes(List, TestData[2].Id, TestData[1].Id);
+        /* Test 4: Remove from single-node d-list */
+        List_t* DList = LL_NewList(LL_DOUBLE);
+        ExpectResponse(LL_AddToBack(DList, &TestData[0]), LL_OK);
+        ExpectResponse(LL_RemoveTail(DList), LL_OK);
+        ExpectEmptyList(DList);
 
-        ExpectResponse(LL_DeleteList(List), LL_OK);
-        ExpectResponse(LL_DeleteList(EmptyList), LL_OK);
+        /* Test 5: Remove from multi-node d-list */
+        ExpectResponse(LL_AddToFront(DList, &TestData[0]), LL_OK);
+        ExpectResponse(LL_AddToFront(DList, &TestData[1]), LL_OK);
+        ExpectResponse(LL_AddToFront(DList, &TestData[2]), LL_OK);
+        ExpectResponse(LL_RemoveTail(DList), LL_OK);
+        ExpectListWith2Nodes(DList, TestData[2].Id, TestData[1].Id);
+
+        /* Test 6: Remove from single-node s-list */
+        List_t* SList = LL_NewList(LL_SINGLE);
+        ExpectResponse(LL_AddToBack(SList, &TestData[0]), LL_OK);
+        ExpectResponse(LL_RemoveTail(SList), LL_OK);
+        ExpectEmptyList(SList);
+
+        /* Test 7: Remove from multi-node s-list */
+        ExpectResponse(LL_AddToFront(SList, &TestData[0]), LL_OK);
+        ExpectResponse(LL_AddToFront(SList, &TestData[1]), LL_OK);
+        ExpectResponse(LL_AddToFront(SList, &TestData[2]), LL_OK);
+        ExpectResponse(LL_RemoveTail(SList), LL_OK);
+        ExpectListWith2Nodes(SList, TestData[2].Id, TestData[1].Id);
+
+        ExpectResponse(LL_DeleteList(DList), LL_OK);
+        ExpectResponse(LL_DeleteList(SList), LL_OK);
+        ExpectResponse(LL_DeleteList(EmptySList), LL_OK);
+        ExpectResponse(LL_DeleteList(EmptyDList), LL_OK);
     }
     TestEnd();
 
